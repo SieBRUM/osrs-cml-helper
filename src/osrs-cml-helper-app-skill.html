@@ -1,0 +1,71 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="osrs-cml-helper-app-skill">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+
+    <paper-card heading="[[skillName]]" alt="Emmental">
+      <div class="card-content">
+        <b>Exp gained:</b> [[expGained(stats)]]
+        <b>Rank gained:</b> [[rankGained(stats)]]
+      </div>
+    </paper-card>
+
+  </template>
+
+  <script>
+    class Skill extends Polymer.Element {
+      static get is() { return 'osrs-cml-helper-app-skill'; }
+      static get properties() {
+        return {
+          skillName: {
+            value: "UNKNOWN"
+          },
+          stats: {
+            Type: Array
+          }
+        };
+      }
+
+      sanatizeStats(stats) {
+        if (!stats) {
+          return;
+        }
+        return stats.split(',');
+      }
+
+      expGained(stats) {
+        stats = this.sanatizeStats(stats);
+        return stats[0];
+      }
+      expCurrent(stats) {
+        stats = this.sanatizeStats(stats);
+        return stats[1];
+      }
+      rankGained(stats) {
+        stats = this.sanatizeStats(stats);
+        return stats[2];
+      }
+      rankCurrent(stats) {
+        stats = this.sanatizeStats(stats);
+        return stats[3];
+      }
+    }
+
+    window.customElements.define(Skill.is, Skill);
+  </script>
+</dom-module>

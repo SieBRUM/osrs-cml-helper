@@ -1,0 +1,112 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="osrs-cml-helper-app-skill.html">
+
+<dom-module id="osrs-cml-helper-app-tracker">
+  <template>
+    <style include="shared-styles iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+    <iron-ajax url="http://crystalmathlabs.com/tracker/api.php?type=track&user=[[toApiUsername(username)]]" handle-as="text/html"
+      on-response="handleResponse" id="trackUserCall" loading="{{isLoading}}"></iron-ajax>
+
+    <div class="card">
+      <paper-input label="Username" id="inputWithButton" value="{{username}}" on-keydown="checkForEnter">
+        <paper-icon-button slot="suffix" icon="search" alt="clear" title="clear" on-tap="onSearch">Yoo</paper-icon-button>
+      </paper-input>
+      <div align="center">
+        <paper-spinner-lite active="[[isLoading]]"></paper-spinner-lite>
+      </div>
+      <div class="container flex-vertical">
+        <template is="dom-repeat" items="[[player]]" index="index" as="stat">
+          <osrs-cml-helper-app-skill skill-name="[[calculateSkillName(index)]]" stats="[[calculateStats(player,index)]]"></osrs-cml-helper-app-skill>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    class Tracker extends Polymer.Element {
+      static get is() { return 'osrs-cml-helper-app-tracker'; }
+      static get properties() {
+        return {
+          username: {
+            type: String,
+          },
+          player: {
+            type: Array,
+            value: []
+          },
+          tail: {
+            observer: 'onTailChange'
+          }
+        };
+      }
+
+      onSearch(event) {
+        if (!this.username) {
+          return;
+        }
+        window.history.replaceState({}, null, `/tracker/${this.username.replace(' ', '+')}`);
+        this.$.trackUserCall.generateRequest();
+      }
+
+      handleResponse(response) {
+        this.responseToPlayer(response.detail.response);
+      }
+
+      toApiUsername(username) {
+        if (!username) {
+          return;
+        }
+        return username.split(' ').join('_');
+      }
+
+      checkForEnter(e) {
+        if (e.keyCode === 13) {
+          this.onSearch();
+        }
+      }
+
+      responseToPlayer(reponse) {
+        this.player = reponse.split("\n").slice(1);
+      }
+
+      calculateSkillName(index) {
+        var skills = ["Overall", "Attack", "Defence", "Strength", "Hitpoints",
+          "Ranged", "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching",
+          "Fishing", "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility",
+          "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction"];
+
+        return skills[index];
+      }
+
+      calculateStats(player, index) {
+        return player[index];
+      }
+
+      onTailChange(value) {
+        if (!value.path) {
+          return;
+        }
+        if (value.prefix !== "/tracker") {
+          return;
+        }
+        this.username = value.path.replace('/', '');
+        this.onSearch(null);
+      }
+    }
+
+    window.customElements.define(Tracker.is, Tracker);
+  </script>
+</dom-module>
