@@ -9,21 +9,29 @@
 
 <dom-module id="osrs-cml-helper-app-skill">
   <template>
-    <style include="shared-styles">
-      :host {
-        display: block;
+    <custom-style>
+      <style include="shared-styles">
+        :host {
+          display: block;
 
-        padding: 10px;
-      }
-    </style>
+          padding: 10px;
+        }
+      </style>
+    </custom-style>
 
+    <div class="skillcard">
+      <paper-card heading="[[skillName]]" alt="[[skillName]]">
+        <div class="card-content">
+          <p title="[[expCurrent(stats)]]">
+            <b>Exp gained:</b> [[expGained(stats)]]
+          </p>
+          <p title="[[rankCurrent(stats)]]">
+            <b>Rank gained:</b> [[rankGained(stats)]]
+          </p>
+        </div>
+      </paper-card>
+    </div>
 
-    <paper-card heading="[[skillName]]" alt="Emmental">
-      <div class="card-content">
-        <b>Exp gained:</b> [[expGained(stats)]]
-        <b>Rank gained:</b> [[rankGained(stats)]]
-      </div>
-    </paper-card>
 
   </template>
 
@@ -42,28 +50,92 @@
       }
 
       sanatizeStats(stats) {
-        if (!stats) {
-          return;
-        }
         return stats.split(',');
       }
 
+      sanatizeExp(exp) {
+        return exp.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
       expGained(stats) {
+        if (!stats) {
+          return;
+        }
         stats = this.sanatizeStats(stats);
-        return stats[0];
+        return this.sanatizeExp(stats[0]);
       }
       expCurrent(stats) {
+        if (!stats) {
+          return;
+        }
         stats = this.sanatizeStats(stats);
-        return stats[1];
+        return this.sanatizeExp(stats[2]);
       }
       rankGained(stats) {
+        if (!stats) {
+          return;
+        }
         stats = this.sanatizeStats(stats);
-        return stats[2];
+        return this.sanatizeExp(stats[1]);
       }
       rankCurrent(stats) {
+        if (!stats) {
+          return;
+        }
         stats = this.sanatizeStats(stats);
-        return stats[3];
+        return this.sanatizeExp(stats[3]);
       }
+
+      getExperience(n) {
+        if (n > 99) {
+          n = 99;
+        } else if (n <= 1) {
+          return 0;
+        }
+        var points = 0;
+        for (lvl = 1; lvl < n; lvl++) {
+          points += Math.floor(lvl + 300 * Math.pow(2, lvl / 7.));
+        }
+        return Math.floor(points / 4);
+      }
+
+      getLevel(xp) {
+        xp = this.sanatizeStats(xp);
+        xp = xp[2];
+
+        var points = 0;
+        var lvlXP = 0;
+        for (let lvl = 1; lvl < 100; lvl++) {
+          points += Math.floor(lvl + 300 * Math.pow(2, lvl / 7.));
+          lvlXP = Math.floor(points / 4);
+
+          if (lvlXP > xp) {
+            return lvl;
+          }
+        }
+        return 99;
+      }
+
+      getVirtualLevel(xp) {
+        xp = this.sanatizeStats(xp);
+        xp = xp[2];
+
+        var points = 0;
+        var lvlXP = 0;
+        for (lvl = 1; lvl < 127; lvl++) {
+          points += Math.floor(lvl + 300 * Math.pow(2, lvl / 7.));
+          lvlXP = Math.floor(points / 4);
+          if (lvlXP > xp) {
+            return lvl;
+          }
+        }
+        return 126;
+      }
+
+      getCombatLevel(att, str, def, rng, mag, pray, hp) {
+        return ((def + hp + Math.floor(pray / 2) + 1.3 * Math.max(Math.max(att + str, Math.floor(1.5 * mag)), Math.floor(1.5 * rng))) / 4).toFixed(2);
+      }
+
     }
 
     window.customElements.define(Skill.is, Skill);

@@ -1,37 +1,43 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
 <link rel="import" href="shared-styles.html">
 <link rel="import" href="osrs-cml-helper-app-skill.html">
 
 <dom-module id="osrs-cml-helper-app-tracker">
   <template>
-    <style include="shared-styles iron-flex iron-flex-alignment">
-      :host {
-        display: block;
+    <custom-style>
+      <style include="shared-styles">
+        :host {
+          display: block;
 
-        padding: 10px;
-      }
-    </style>
+          padding: 10px;
+        }
+      </style>
+    </custom-style>
     <iron-ajax url="http://crystalmathlabs.com/tracker/api.php?type=track&user=[[toApiUsername(username)]]" handle-as="text/html"
       on-response="handleResponse" id="trackUserCall" loading="{{isLoading}}"></iron-ajax>
+    <iron-ajax url="http://crystalmathlabs.com/tracker/api.php?type=update&user=[[toApiUsername(username)]]" handle-as="text/html"
+      on-response="handleUpdate" id="updateUserCall" loading="{{isLoading}}"></iron-ajax>
 
     <div class="card">
       <paper-input label="Username" id="inputWithButton" value="{{username}}" on-keydown="checkForEnter">
         <paper-icon-button slot="suffix" icon="search" alt="clear" title="clear" on-tap="onSearch">Yoo</paper-icon-button>
       </paper-input>
+      <paper-button on-tap="updateStats">Update stats!</paper-button>
+
       <div align="center">
         <paper-spinner-lite active="[[isLoading]]"></paper-spinner-lite>
       </div>
-      <div class="container flex-vertical">
-        <template is="dom-repeat" items="[[player]]" index="index" as="stat">
-          <osrs-cml-helper-app-skill skill-name="[[calculateSkillName(index)]]" stats="[[calculateStats(player,index)]]"></osrs-cml-helper-app-skill>
-        </template>
-      </div>
+      <template is="dom-repeat" items="[[player]]" index="index" as="stat">
+        <osrs-cml-helper-app-skill skill-name="[[calculateSkillName(index)]]" stats="[[calculateStats(player,index)]]"></osrs-cml-helper-app-skill>
+      </template>
+
     </div>
   </template>
 
@@ -53,7 +59,7 @@
         };
       }
 
-      onSearch(event) {
+      onSearch() {
         if (!this.username) {
           return;
         }
@@ -78,6 +84,13 @@
         }
       }
 
+      updateStats() {
+        this.$.updateUserCall.generateRequest();
+      }
+
+      handleUpdate() {
+        this.onSearch();
+      }
       responseToPlayer(reponse) {
         this.player = reponse.split("\n").slice(1);
       }
@@ -102,8 +115,8 @@
         if (value.prefix !== "/tracker") {
           return;
         }
-        this.username = value.path.replace('/', '');
-        this.onSearch(null);
+        this.username = value.path.replace('/', '').replace('+', ' ');
+        this.onSearch();
       }
     }
 

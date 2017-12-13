@@ -5,7 +5,7 @@
   ],
   "license": "https://polymer.github.io/LICENSE.txt",
   "dependencies": {
-    "app-layout": "PolymerElements/app-layout#^2.0.0",
+    "app-layout": "PolymerElements/app-layout#^2.0.4",
     "app-route": "PolymerElements/app-route#^2.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.1",
     "iron-iconset-svg": "PolymerElements/iron-iconset-svg#^2.0.0",
@@ -25,7 +25,8 @@
     "polymer": "^2.0.0"
   },
   "devDependencies": {
-    "web-component-tester": "Polymer/web-component-tester#^6.0.0"
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "paper-button": "^2.0.0"
   },
   "private": true
 }
